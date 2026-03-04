@@ -1,37 +1,198 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>fish-house.su</title>
-  <style>
-    :root { color-scheme: dark; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      background: #0b1220;
-      color: #e5e7eb;
-    }
-    .card {
-      text-align: center;
-      padding: 32px;
-      border: 1px solid #334155;
-      border-radius: 12px;
-      background: #0f172a;
-      max-width: 560px;
-      width: calc(100% - 48px);
-    }
-    h1 { margin: 0 0 8px; font-size: 28px; }
-    p { margin: 0; opacity: .9; }
-  </style>
+    <meta charset="UTF-8">
+    <title>Fish House — семейный отдых и рыбалка с душой</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Fish House — тёплый семейный отдых у воды: рыбалка, уютные домики, прогулки на лодке и воспоминания, которые хочется повторить.">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-  <main class="card">
-    <h1>fish-house.su</h1>
-    <p>Сайт в подготовке. Скоро здесь появится контент.</p>
-  </main>
+<header class="site-header">
+    <div class="container header-inner">
+        <div class="logo">Fish House</div>
+        <nav class="nav" aria-label="Основная навигация">
+            <a href="#about">О нас</a>
+            <a href="#tours">Туры</a>
+            <a href="#gallery">Галерея</a>
+            <a href="#contacts">Контакты</a>
+        </nav>
+    </div>
+</header>
+
+<main>
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-media">
+            <img src="assets/img/hero.jpg" alt="Рыбалка на рассвете">
+        </div>
+        <div class="hero-content">
+            <p class="eyebrow">Семейная база у воды</p>
+            <h1>Семейный отдых у воды.</h1>
+            <p class="hero-text">
+                Fish House — место для тёплых выходных всей семьёй: утренние прогулки по воде,
+                первая пойманная рыба, вечерний чай у костра и разговоры без спешки.
+                Мы берём на себя организацию, а вам остаётся собирать красивые моменты.
+            </p>
+            <div class="hero-actions">
+                <a href="#tours" class="btn primary">Посмотреть туры</a>
+                <a href="#contacts" class="btn ghost">Выбрать семейный уикенд</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About -->
+    <section id="about" class="section section-split">
+        <div class="container split-inner">
+            <div class="split-text">
+                <h2>Уютное место, куда хочется возвращаться снова и снова</h2>
+                <p>
+                    Fish House расположен в сосновой роще у спокойной протоки реки Дубрава.
+                    Дорога занимает всего пару часов, а по ощущениям — будто вы уехали в маленький отпуск,
+                    где вместо звонков слышен плеск воды и пение птиц.
+                </p>
+                <p>
+                    Здесь комфортно и новичкам, и тем, кто рыбачит много лет:
+                    инструктор всё подскажет, детям подберём безопасный формат,
+                    а для взрослых найдём идеальный темп отдыха — без гонки и перегруза.
+                </p>
+            </div>
+            <div class="split-meta">
+                <div class="meta-block">
+                    <span class="meta-label">Сезон</span>
+                    <span class="meta-value">Круглый год · особенно красиво с апреля по октябрь</span>
+                </div>
+                <div class="meta-block">
+                    <span class="meta-label">Тип отдыха</span>
+                    <span class="meta-value">Семейная рыбалка, прогулки на лодке, баня, пикник у воды</span>
+                </div>
+                <div class="meta-block">
+                    <span class="meta-label">Формат</span>
+                    <span class="meta-value">Небольшие группы 2–8 гостей</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tours -->
+    <section id="tours" class="section section-cards">
+        <div class="container">
+            <div class="section-header">
+                <h2>Форматы отдыха для семьи и друзей</h2>
+                <p>Выбирайте готовый сценарий — от короткого выезда до полноценного мини-отпуска.</p>
+            </div>
+            <div class="cards-grid">
+                <article class="card">
+                    <h3>Доброе утро на воде</h3>
+                    <p class="card-tag">1 день · 07:00–15:00 · от 5 200 ₽/чел</p>
+                    <p>
+                        Лёгкий и красивый формат для всей семьи: прогулка на лодке,
+                        знакомство со снастями, тёплый обед на берегу и много фотографий на память.
+                    </p>
+                </article>
+                <article class="card">
+                    <h3>Уикенд у причала</h3>
+                    <p class="card-tag">2 дня / 1 ночь · от 13 400 ₽/чел</p>
+                    <p>
+                        Уютный домик, рыбалка в комфортном ритме, баня и ужин у костра.
+                        Отличный вариант, чтобы выбраться с детьми и перезагрузиться за выходные.
+                    </p>
+                </article>
+                <article class="card">
+                    <h3>Семейные каникулы</h3>
+                    <p class="card-tag">4 дня · комфорт+ · от 31 500 ₽/чел</p>
+                    <p>
+                        Несколько дней без суеты: утренние выезды, прогулки по лесным тропам,
+                        мастер-класс по рыбалке для детей и вечерние посиделки всей компанией.
+                    </p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery -->
+    <section id="gallery" class="section section-gallery">
+        <div class="container">
+            <div class="section-header">
+                <h2>Настроение места</h2>
+                <p>Тёплые кадры из наших поездок: утренний свет, спокойная вода и моменты, которые остаются с вами надолго.</p>
+            </div>
+            <div class="gallery-grid">
+                <figure class="gallery-item">
+                    <img src="assets/img/gallery-1.jpg" alt="Лодка на рассвете">
+                </figure>
+                <figure class="gallery-item">
+                    <img src="assets/img/gallery-2.jpg" alt="Река и лес">
+                </figure>
+                <figure class="gallery-item">
+                    <img src="assets/img/gallery-3.jpg" alt="Рыбак на причале">
+                </figure>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contacts -->
+    <section id="contacts" class="section section-contacts">
+        <div class="container contacts-inner">
+            <div>
+                <h2>Напишите нам — подберём идеальный формат</h2>
+                <p>
+                    Расскажите, с кем планируете поездку, и мы соберём программу под ваш ритм:
+                    спокойный семейный отдых, активный выезд или смешанный формат.
+                </p>
+                <p>
+                    Ответим ежедневно с 09:00 до 21:00, подскажем по дороге,
+                    поможем с экипировкой и закрепим удобные даты без лишней бюрократии.
+                </p>
+            </div>
+            <div class="contacts-meta">
+                <div class="meta-block">
+                    <span class="meta-label">E‑mail</span>
+                    <span class="meta-value">hello@fishhouse-family.ru</span>
+                </div>
+                <div class="meta-block">
+                    <span class="meta-label">Телефон</span>
+                    <span class="meta-value">+7 (912) 604-38-25</span>
+                </div>
+                <div class="meta-block">
+                    <span class="meta-label">Локация</span>
+                    <span class="meta-value">Тверская обл., берег р. Дубрава, эко-деревня «Луговая», причал №3</span>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <div class="container footer-inner">
+        <span>© Fish House, 2026. Семейные туры и отдых у воды с заботой о деталях.</span>
+        <span>Instagram: @fishhouse.family · Telegram: @fishhouse_weekend</span>
+    </div>
+</footer>
+<script>
+    (function () {
+        var header = document.querySelector('.site-header');
+        if (!header) return;
+
+        var media = window.matchMedia('(max-width: 600px)');
+
+        function syncHeaderState() {
+            if (!media.matches) {
+                header.classList.remove('is-scrolled');
+                return;
+            }
+
+            if (window.scrollY > 8) {
+                header.classList.add('is-scrolled');
+            } else {
+                header.classList.remove('is-scrolled');
+            }
+        }
+
+        window.addEventListener('scroll', syncHeaderState, { passive: true });
+        window.addEventListener('resize', syncHeaderState);
+        syncHeaderState();
+    })();
+</script>
 </body>
 </html>
