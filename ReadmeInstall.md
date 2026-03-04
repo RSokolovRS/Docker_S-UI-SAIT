@@ -17,10 +17,22 @@ sudo apt install -y docker.io docker-compose-plugin
 sudo systemctl enable --now docker
 ```
 
-## 3) Перейти в проект
+## 3) Скачать проект и перейти в папку
+
+Рекомендуемый путь на сервере: `/opt/docker-s-ui-sait`.
 
 ```bash
-cd /путь/к/Docker_S-UI-SAIT
+sudo mkdir -p /opt/docker-s-ui-sait
+sudo chown -R $USER:$USER /opt/docker-s-ui-sait
+cd /opt
+git clone https://github.com/RSokolovRS/Docker_S-UI-SAIT.git docker-s-ui-sait
+cd /opt/docker-s-ui-sait
+```
+
+Если проект уже скопирован на сервер, просто перейдите в его папку:
+
+```bash
+cd /opt/docker-s-ui-sait
 ```
 
 ## 4) Заполнить `.env`
@@ -79,7 +91,7 @@ docker compose logs --tail=100 nginx s-ui
 
 ```bash
 mkdir -p logs
-(crontab -l 2>/dev/null; echo '17 3 * * * cd /путь/к/Docker_S-UI-SAIT && ./scripts/renew-letsencrypt.sh >> /путь/к/Docker_S-UI-SAIT/logs/letsencrypt-renew.log 2>&1') | crontab -
+(crontab -l 2>/dev/null; echo '17 3 * * * cd /opt/docker-s-ui-sait && ./scripts/renew-letsencrypt.sh >> /opt/docker-s-ui-sait/logs/letsencrypt-renew.log 2>&1') | crontab -
 ```
 
 Проверить cron-задачу:
