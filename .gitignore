@@ -1,0 +1,18 @@
+# Environment files
+.env
+!.env.example
+
+# Let's Encrypt data (sensitive)
+certbot/conf/
+
+# Runtime artifacts
+logs/
+*.log
+
+# Generated backups by init script
+nginx/conf.d/*.bootstrap.bak
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/

@@ -1,0 +1,64 @@
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    depends_on:
+      - s-ui
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ./nginx:/etc/nginx:ro
+      - ./html:/usr/share/nginx/html:ro
+      - ./certbot/www:/var/www/certbot:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+    networks:
+      - web
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/healthz || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  s-ui:
+    image: ${SUI_IMAGE}
+    expose:
+      - "2095"
+      - "2096"
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - s-ui-data:/etc/s-ui
+    networks:
+      - web
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+
+  certbot:
+    image: certbot/certbot:latest
+    profiles:
+      - manual
+    volumes:
+      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
+    networks:
+      - web
+    restart: "no"
+
+networks:
+  web:
+    driver: bridge
+
+volumes:
+  s-ui-data:
