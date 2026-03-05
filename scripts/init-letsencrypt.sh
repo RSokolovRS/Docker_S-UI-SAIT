@@ -7,6 +7,43 @@ cd "$PROJECT_ROOT"
 log() { echo "[$(date '+%F %T')] $*"; }
 die() { echo "[$(date '+%F %T')] ERROR: $*" >&2; exit 1; }
 
+service_running() {
+    local service="$1"
+    docker compose ps --status running --services "$service" 2>/dev/null | grep -qx "$service"
+}
+
+wait_service_running() {
+    local service="$1"
+    local timeout="${2:-30}"
+    local elapsed=0
+
+    while (( elapsed < timeout )); do
+        if service_running "$service"; then
+            return 0
+        fi
+        sleep 1
+        ((elapsed++))
+    done
+
+    return 1
+}
+
+print_service_logs() {
+    local service="$1"
+    log "Последние логи сервиса $service:"
+    docker compose logs --tail=120 "$service" || true
+}
+
+ensure_service_running() {
+    local service="$1"
+    local timeout="${2:-30}"
+
+    if ! wait_service_running "$service" "$timeout"; then
+        print_service_logs "$service"
+        die "Сервис $service не перешёл в состояние running за ${timeout}с."
+    fi
+}
+
 if ! command -v docker >/dev/null 2>&1; then
   die "Docker не установлен."
 fi
@@ -42,7 +79,11 @@ PANEL_CONF="nginx/conf.d/panel.conf"
 mkdir -p certbot/www certbot/conf
 
 log "Запускаю s-ui и nginx в bootstrap (HTTP) режиме..."
-docker compose up -d s-ui nginx
+docker compose up -d s-ui
+ensure_service_running s-ui 60
+
+docker compose up -d nginx
+ensure_service_running nginx 60
 
 log "Проверяю синтаксис nginx..."
 docker compose exec -T nginx nginx -t
@@ -165,6 +206,7 @@ server {
 EOF
 
 log "Проверяю и перезагружаю nginx..."
+ensure_service_running nginx 30
 docker compose exec -T nginx nginx -t
 docker compose exec -T nginx nginx -s reload
 

@@ -90,6 +90,38 @@ docker compose pull
 - переключит Nginx на TLS-конфиг,
 - перезагрузит Nginx.
 
+Если на этом шаге появилась ошибка:
+
+```text
+OCI runtime exec failed: exec failed: cannot exec in a stopped container
+```
+
+это означает, что контейнер `nginx` остановился до проверки `nginx -t`.
+
+Быстрая диагностика:
+
+```bash
+docker compose ps
+docker compose logs --tail=150 nginx
+docker compose logs --tail=150 s-ui
+```
+
+Частые причины:
+
+- ошибка в `nginx/nginx.conf` или `nginx/conf.d/*.conf`;
+- в `.env` некорректный `SUI_IMAGE` или не заполнены домены/email;
+- случайно изменённые конфиги отличаются от шаблона проекта.
+
+Как исправить:
+
+```bash
+docker compose run --rm nginx nginx -t
+docker compose up -d s-ui nginx
+./scripts/init-letsencrypt.sh
+```
+
+Если `docker compose run --rm nginx nginx -t` показывает ошибку синтаксиса, исправьте конфиг и повторите команды выше.
+
 ## 7) Поднять стек
 
 ```bash

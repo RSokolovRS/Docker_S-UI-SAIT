@@ -287,6 +287,43 @@ cd "$PROJECT_ROOT"
 log() { echo "[$(date '+%F %T')] $*"; }
 die() { echo "[$(date '+%F %T')] ERROR: $*" >&2; exit 1; }
 
+service_running() {
+  local service="$1"
+  docker compose ps --status running --services "$service" 2>/dev/null | grep -qx "$service"
+}
+
+wait_service_running() {
+  local service="$1"
+  local timeout="${2:-30}"
+  local elapsed=0
+
+  while (( elapsed < timeout )); do
+    if service_running "$service"; then
+      return 0
+    fi
+    sleep 1
+    ((elapsed++))
+  done
+
+  return 1
+}
+
+print_service_logs() {
+  local service="$1"
+  log "Последние логи сервиса $service:"
+  docker compose logs --tail=120 "$service" || true
+}
+
+ensure_service_running() {
+  local service="$1"
+  local timeout="${2:-30}"
+
+  if ! wait_service_running "$service" "$timeout"; then
+    print_service_logs "$service"
+    die "Сервис $service не перешёл в состояние running за ${timeout}с."
+  fi
+}
+
 if ! command -v docker >/dev/null 2>&1; then
   die "Docker не установлен."
 fi
@@ -322,7 +359,11 @@ PANEL_CONF="nginx/conf.d/panel.conf"
 mkdir -p certbot/www certbot/conf
 
 log "Запускаю s-ui и nginx в bootstrap (HTTP) режиме..."
-docker compose up -d s-ui nginx
+docker compose up -d s-ui
+ensure_service_running s-ui 60
+
+docker compose up -d nginx
+ensure_service_running nginx 60
 
 log "Проверяю синтаксис nginx..."
 docker compose exec -T nginx nginx -t
@@ -445,6 +486,7 @@ server {
 EOF
 
 log "Проверяю и перезагружаю nginx..."
+ensure_service_running nginx 30
 docker compose exec -T nginx nginx -t
 docker compose exec -T nginx nginx -s reload
 
@@ -546,6 +588,8 @@ docker compose pull
 docker compose up -d
 ```
 
+Если на этом шаге увидели `cannot exec in a stopped container`, переходите в секцию `Troubleshooting` ниже.
+
 - 8) Включить автообновление сертификатов (cron):
 ```bash
 (crontab -l 2>/dev/null; echo '17 3 * * * cd ~/deploy/fish-house && ./scripts/renew-letsencrypt.sh >> ~/deploy/fish-house/logs/letsencrypt-renew.log 2>&1') | crontab -
@@ -606,6 +650,21 @@ docker compose --profile manual run --rm certbot renew --dry-run --webroot -w /v
 - Листинг директорий уже отключен (`autoindex off`), версия Nginx скрыта (`server_tokens off`).
 
 ## Troubleshooting
+- `OCI runtime exec failed: exec failed: cannot exec in a stopped container` во время `./scripts/init-letsencrypt.sh`:
+  - Это означает, что контейнер `nginx` остановился до выполнения `docker compose exec ... nginx -t`.
+  - Диагностика:
+    - `docker compose ps`
+    - `docker compose logs --tail=150 nginx`
+    - `docker compose logs --tail=150 s-ui`
+  - Частые причины:
+    - ошибка в `nginx/nginx.conf` или `nginx/conf.d/*.conf`;
+    - в `.env` некорректный `SUI_IMAGE` или не заполнены переменные доменов/email;
+    - локально изменённые конфиги отличаются от рабочих примеров.
+  - Что делать:
+    - исправить конфиг/`.env`;
+    - проверить конфиг командой `docker compose run --rm nginx nginx -t`;
+    - запустить `docker compose up -d s-ui nginx` и повторить `./scripts/init-letsencrypt.sh`.
+
 - `404` на `panel.../app/`:
   - Проверьте, что в S-UI реально используются пути `/app/` и `/sub/`.
   - Проверьте конфиг и перезагрузку: `docker compose exec -T nginx nginx -t && docker compose exec -T nginx nginx -s reload`.
