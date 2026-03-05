@@ -46,7 +46,8 @@ services:
     environment:
       - TZ=${TZ}
     volumes:
-      - ./nginx:/etc/nginx:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./html:/usr/share/nginx/html:ro
       - ./certbot/www:/var/www/certbot:ro
       - ./certbot/conf:/etc/letsencrypt:ro
@@ -652,6 +653,9 @@ docker compose --profile manual run --rm certbot renew --dry-run --webroot -w /v
 ## Troubleshooting
 - `OCI runtime exec failed: exec failed: cannot exec in a stopped container` во время `./scripts/init-letsencrypt.sh`:
   - Это означает, что контейнер `nginx` остановился до выполнения `docker compose exec ... nginx -t`.
+  - Если в логах видно `open() "/etc/nginx/mime.types" failed`:
+    - Причина: при монтировании всей папки `./nginx:/etc/nginx:ro` затираются встроенные файлы образа (включая `mime.types`).
+    - Исправление: используйте раздельные mounts `./nginx/nginx.conf:/etc/nginx/nginx.conf:ro` и `./nginx/conf.d:/etc/nginx/conf.d:ro`.
   - Диагностика:
     - `docker compose ps`
     - `docker compose logs --tail=150 nginx`

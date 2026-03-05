@@ -108,6 +108,11 @@ docker compose logs --tail=150 s-ui
 
 Частые причины:
 
+- в логах `nginx` ошибка `open() "/etc/nginx/mime.types" failed`:
+  - причина: смонтирована вся папка `./nginx:/etc/nginx:ro`, из-за чего в контейнере пропадает `mime.types`;
+  - решение: в `docker-compose.yml` оставить раздельные mounts:
+    - `./nginx/nginx.conf:/etc/nginx/nginx.conf:ro`
+    - `./nginx/conf.d:/etc/nginx/conf.d:ro`
 - ошибка в `nginx/nginx.conf` или `nginx/conf.d/*.conf`;
 - в `.env` некорректный `SUI_IMAGE` или не заполнены домены/email;
 - случайно изменённые конфиги отличаются от шаблона проекта.
@@ -116,7 +121,7 @@ docker compose logs --tail=150 s-ui
 
 ```bash
 docker compose run --rm nginx nginx -t
-docker compose up -d s-ui nginx
+docker compose up -d --force-recreate nginx
 ./scripts/init-letsencrypt.sh
 ```
 
