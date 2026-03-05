@@ -35,18 +35,40 @@ cd /opt/docker-s-ui-sait
 cd /opt/docker-s-ui-sait
 ```
 
-## 4) Заполнить `.env`
+## 4) Создать `.env` из шаблона и заполнить
 
-Проверьте/задайте значения:
+Если в проекте есть `.env.example`, создайте рабочий файл `.env`:
 
-- `SUI_IMAGE` — реальный образ (не placeholder)
-- `LETSENCRYPT_EMAIL` — ваша почта
-- `ROOT_DOMAIN`, `WWW_DOMAIN`, `PANEL_DOMAIN` — ваши домены
+```bash
+cp .env.example .env
+```
 
-Пример:
+Если `.env` уже существует, не перезаписывайте его — просто отредактируйте текущий файл.
+
+Что нужно проверить/задать в `.env`:
+
+- `SUI_IMAGE` — имя Docker-образа для сервиса S-UI в формате `registry/repository:tag`.
+  - Это не placeholder и не произвольный текст.
+  - Для этого проекта используйте:
+    - `SUI_IMAGE=ghcr.io/alireza0/s-ui:latest`
+  - Откуда брать: из документации/README проекта и списка образов, которые реально доступны в реестре контейнеров.
+- `LETSENCRYPT_EMAIL` — ваша почта для уведомлений Let's Encrypt.
+- `ROOT_DOMAIN`, `WWW_DOMAIN`, `PANEL_DOMAIN` — ваши домены.
+
+Проверка, что образ доступен:
+
+```bash
+docker pull ghcr.io/alireza0/s-ui:latest
+```
+
+Пример блока `.env`:
 
 ```dotenv
 SUI_IMAGE=ghcr.io/alireza0/s-ui:latest
+LETSENCRYPT_EMAIL=admin@fish-house.su
+ROOT_DOMAIN=fish-house.su
+WWW_DOMAIN=www.fish-house.su
+PANEL_DOMAIN=panel.fish-house.su
 ```
 
 ## 5) Права на скрипты и загрузка образов
