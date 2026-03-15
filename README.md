@@ -2,12 +2,15 @@
 
 ## Архитектура
 - Docker Compose поднимает 3 сервиса: `nginx`, `s-ui`, `certbot` в общей сети `web`.
-- Снаружи публикуются только порты `80` и `443` у `nginx`; у `s-ui` только `expose 2095/2096` (внутри сети Docker).
-- Stage A (bootstrap): Nginx работает только по HTTP, обслуживает ACME challenge, заглушку и проксирует `panel` на S-UI.
+- Снаружи публикуются только порты `80` и `443` у `nginx`; SSH остаётся на хосте (например, `27272`).
+- У `s-ui` открыты только внутренние порты Docker-сети: `2095/2096` (панель/подписки) и `28888/28889` (stream backends).
+- Внешний `443` обрабатывается в `stream` через `ssl_preread` и маршрутизируется по SNI:
+  - `panel.fish-house.su`, `fish-house.su`, `www.fish-house.su` -> внутренний HTTPS Nginx на `127.0.0.1:4443`;
+  - `hy2.fish-house.su` -> `s-ui:28888` (Hysteria2);
+  - `vless.fish-house.su` -> `s-ui:28889` (VLESS-TCP).
 - Сертификат выпускается через `certbot` в контейнере с `--webroot` (без `certbot --nginx` на хосте).
-- После успешного выпуска `scripts/init-letsencrypt.sh` автоматически переключает Nginx на Stage B (TLS).
-- Stage B: HTTP редиректится на HTTPS, кроме `/.well-known/acme-challenge/`; TLS только `TLSv1.2/TLSv1.3`.
-- Домены: `fish-house.su` и `www.fish-house.su` -> заглушка; `panel.fish-house.su/app/` и `/sub/` -> reverse proxy в S-UI.
+- HTTP на `80` используется для `/.well-known/acme-challenge/` и редиректа на HTTPS.
+- Панель и подписки остаются обычным HTTP-proxy внутри Docker: `location /app/ { proxy_pass http://s-ui:2095; }` и `location /sub/ { proxy_pass http://s-ui:2096; }`.
 - Данные certbot хранятся строго в `./certbot/conf` и `./certbot/www`; данные S-UI — в Docker volume `s-ui-data`.
 - Обновление сертификатов выполняется отдельным скриптом `renew-letsencrypt.sh` (cron/systemd), после обновления делается `nginx reload`.
 
@@ -37,7 +40,7 @@ fish-house/
 ```yaml
 services:
   nginx:
-    image: nginx:1.27-alpine
+    image: nginx:latest
     depends_on:
       - s-ui
     ports:
@@ -73,6 +76,8 @@ services:
     expose:
       - "2095"
       - "2096"
+      - "28888"
+      - "28889"
     environment:
       - TZ=${TZ}
     volumes:
@@ -127,6 +132,36 @@ events {
     worker_connections 1024;
 }
 
+stream {
+  upstream stream_https_backend {
+    server 127.0.0.1:4443;
+  }
+
+  upstream stream_hy2_backend {
+    server s-ui:28888;
+  }
+
+  upstream stream_vless_backend {
+    server s-ui:28889;
+  }
+
+  map $ssl_preread_server_name $stream_backend {
+    panel.fish-house.su stream_https_backend;
+    fish-house.su stream_https_backend;
+    www.fish-house.su stream_https_backend;
+    hy2.fish-house.su stream_hy2_backend;
+    vless.fish-house.su stream_vless_backend;
+    default stream_https_backend;
+  }
+
+  server {
+    listen 443;
+    listen [::]:443;
+    proxy_pass $stream_backend;
+    ssl_preread on;
+  }
+}
+
 http {
     include /etc/nginx/mime.types;
     default_type application/octet-stream;
@@ -174,9 +209,6 @@ server {
     listen [::]:80 default_server;
     server_name fish-house.su www.fish-house.su;
 
-    root /usr/share/nginx/html;
-    index index.html;
-
     location = /healthz {
         access_log off;
         add_header Content-Type text/plain;
@@ -190,7 +222,23 @@ server {
     }
 
     location / {
-        try_files $uri /index.html;
+      return 301 https://$host$request_uri;
+    }
+  }
+
+  server {
+    listen 4443 ssl http2;
+    listen [::]:4443 ssl http2;
+    server_name fish-house.su www.fish-house.su;
+
+    ssl_certificate /etc/letsencrypt/live/fish-house.su/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/fish-house.su/privkey.pem;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    location / {
+      try_files $uri /index.html;
     }
 }
 ```
@@ -208,13 +256,26 @@ server {
         try_files $uri =404;
     }
 
+    location / {
+      return 301 https://$host$request_uri;
+    }
+  }
+
+  server {
+    listen 4443 ssl http2;
+    listen [::]:4443 ssl http2;
+    server_name panel.fish-house.su;
+
+    ssl_certificate /etc/letsencrypt/live/fish-house.su/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/fish-house.su/privkey.pem;
+
     location = / {
-        return 302 /app/;
+      return 302 /app/;
     }
 
     location /app/ {
         proxy_http_version 1.1;
-        proxy_pass http://s-ui:2095/app/;
+      proxy_pass http://s-ui:2095;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -223,7 +284,7 @@ server {
 
     location /sub/ {
         proxy_http_version 1.1;
-        proxy_pass http://s-ui:2096/sub/;
+      proxy_pass http://s-ui:2096;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -417,8 +478,8 @@ server {
 }
 
 server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
+  listen 4443 ssl http2;
+  listen [::]:4443 ssl http2;
     server_name fish-house.su www.fish-house.su;
 
     ssl_certificate /etc/letsencrypt/live/fish-house.su/fullchain.pem;
@@ -451,8 +512,8 @@ server {
 }
 
 server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
+  listen 4443 ssl http2;
+  listen [::]:4443 ssl http2;
     server_name panel.fish-house.su;
 
     ssl_certificate /etc/letsencrypt/live/fish-house.su/fullchain.pem;
@@ -464,7 +525,7 @@ server {
 
     location /app/ {
         proxy_http_version 1.1;
-        proxy_pass http://s-ui:2095/app/;
+      proxy_pass http://s-ui:2095;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -473,7 +534,7 @@ server {
 
     location /sub/ {
         proxy_http_version 1.1;
-        proxy_pass http://s-ui:2096/sub/;
+      proxy_pass http://s-ui:2096;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -573,6 +634,8 @@ chmod +x scripts/init-letsencrypt.sh scripts/renew-letsencrypt.sh
   - `A` запись `fish-house.su` -> IP сервера
   - `A` запись `www` -> IP сервера (или CNAME на `fish-house.su`)
   - `A` запись `panel` -> IP сервера
+  - `A` запись `hy2` -> IP сервера
+  - `A` запись `vless` -> IP сервера
   - У всех записей Proxy Status = `DNS only`
 
 - 6) `SUI_IMAGE` — PLACEHOLDER, подставить актуальный образ:
@@ -622,6 +685,10 @@ curl -I https://panel.fish-house.su/app/
 ```
 Ожидаемо: `200` или `302` (в зависимости от ответа S-UI).
 
+- Настройки протоколов в S-UI:
+  - HY2: [HY2.md](HY2.md)
+  - VLESS-TCP: [VLESS.md](VLESS.md)
+
 - Сертификат:
 ```bash
 openssl s_client -connect fish-house.su:443 -servername fish-house.su </dev/null 2>/dev/null | openssl x509 -noout -issuer -subject -dates -ext subjectAltName
@@ -641,7 +708,7 @@ docker compose --profile manual run --rm certbot renew --dry-run --webroot -w /v
 
 ## Hardening / Security
 - Немедленно сменить дефолтные `admin/admin` в S-UI после первого входа.
-- Ограничить доступ к панели по IP в `nginx/conf.d/panel.conf` (в `server` для `443`):
+- Ограничить доступ к панели по IP в `nginx/conf.d/panel.conf` (в HTTPS `server` для `4443`):
   - `allow <ваш_IP>;`
   - `deny all;`
 - На хосте включить `fail2ban` (опционально) для SSH и веб-логов.
@@ -651,6 +718,10 @@ docker compose --profile manual run --rm certbot renew --dry-run --webroot -w /v
 - Листинг директорий уже отключен (`autoindex off`), версия Nginx скрыта (`server_tokens off`).
 
 ## Troubleshooting
+- Для сверки полей inbound/TLS в панели S-UI используйте:
+  - [HY2.md](HY2.md)
+  - [VLESS.md](VLESS.md)
+
 - `OCI runtime exec failed: exec failed: cannot exec in a stopped container` во время `./scripts/init-letsencrypt.sh`:
   - Это означает, что контейнер `nginx` остановился до выполнения `docker compose exec ... nginx -t`.
   - Если в логах видно `open() "/etc/nginx/mime.types" failed`:
@@ -679,7 +750,7 @@ docker compose --profile manual run --rm certbot renew --dry-run --webroot -w /v
 
 - Ошибки SSL:
   - Убедитесь, что в Cloudflare серое облако (`DNS only`), а не proxy.
-  - Убедитесь, что извне открыты `80/443`.
+  - Убедитесь, что извне открыты `80/443` (и SSH-порт хоста, например `27272`).
   - Проверьте наличие файлов в `certbot/conf/live/fish-house.su/`.
 
 - `challenge failed`:
