@@ -29,6 +29,11 @@
 - fullchain.pem: certbot/conf/live/fish-house.su/fullchain.pem
 - privkey.pem: certbot/conf/live/fish-house.su/privkey.pem
 
+Если используете режим "Использовать путь" в S-UI:
+- указывайте путь внутри контейнера: /etc/letsencrypt/live/fish-house.su/fullchain.pem
+- и путь к ключу: /etc/letsencrypt/live/fish-house.su/privkey.pem
+- путь вида certbot/conf/... не работает, потому что это путь на хосте, а не в контейнере.
+
 Важно после перевыпуска сертификата:
 - Если выполнялся scripts/init-letsencrypt.sh или certbot renew/certonly, заново вставьте актуальные fullchain.pem и privkey.pem в TLS inbound HY2.
 - Причина: в режиме "Использовать текст" S-UI хранит PEM в конфиге inbound и не подхватывает изменения файлов автоматически.

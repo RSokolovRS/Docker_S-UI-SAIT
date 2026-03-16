@@ -43,6 +43,7 @@ services:
       - TZ=${TZ}
     volumes:
       - s-ui-data:/etc/s-ui
+      - ./certbot/conf:/etc/letsencrypt:ro
     networks:
       - web
     restart: unless-stopped
