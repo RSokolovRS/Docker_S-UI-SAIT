@@ -25,6 +25,14 @@
 6. ACME: выключено (сертификат уже выпускается проектом).
 7. ECH: выключено.
 
+Откуда брать файлы для вставки:
+- fullchain.pem: certbot/conf/live/fish-house.su/fullchain.pem
+- privkey.pem: certbot/conf/live/fish-house.su/privkey.pem
+
+Важно после перевыпуска сертификата:
+- Если выполнялся scripts/init-letsencrypt.sh или certbot renew/certonly, заново вставьте актуальные fullchain.pem и privkey.pem в TLS inbound HY2.
+- Причина: в режиме "Использовать текст" S-UI хранит PEM в конфиге inbound и не подхватывает изменения файлов автоматически.
+
 Рекомендуемые параметры TLS:
 - Min version: 1.2.
 - Max version: 1.3.
@@ -45,6 +53,7 @@
 3. Если нет подключения:
 - проверить DNS запись hy2.fish-house.su;
 - проверить, что сертификат содержит hy2.fish-house.su в SAN;
+- если сертификат недавно перевыпускали, заново вставить fullchain.pem/privkey.pem в TLS inbound;
 - проверить, что на хосте слушается 443 UDP;
 - проверить логи nginx и s-ui.
 

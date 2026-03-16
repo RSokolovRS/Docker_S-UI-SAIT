@@ -55,7 +55,7 @@ cp .env.example .env
     - `SUI_IMAGE=ghcr.io/alireza0/s-ui:latest`
   - Откуда брать: из документации/README проекта и списка образов, которые реально доступны в реестре контейнеров.
 - `LETSENCRYPT_EMAIL` — ваша почта для уведомлений Let's Encrypt.
-- `ROOT_DOMAIN`, `WWW_DOMAIN`, `PANEL_DOMAIN` — ваши домены.
+- `ROOT_DOMAIN`, `WWW_DOMAIN`, `PANEL_DOMAIN`, `HY2_DOMAIN`, `VLESS_DOMAIN` — ваши домены.
 
 Проверка, что образ доступен:
 
@@ -71,6 +71,8 @@ LETSENCRYPT_EMAIL=admin@fish-house.su
 ROOT_DOMAIN=fish-house.su
 WWW_DOMAIN=www.fish-house.su
 PANEL_DOMAIN=panel.fish-house.su
+HY2_DOMAIN=hy2.fish-house.su
+VLESS_DOMAIN=vless.fish-house.su
 ```
 
 ## 5) Права на скрипты и загрузка образов

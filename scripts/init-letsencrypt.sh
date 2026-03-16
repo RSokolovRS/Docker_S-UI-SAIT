@@ -66,6 +66,9 @@ set +a
 : "${WWW_DOMAIN:?Укажите WWW_DOMAIN в .env}"
 : "${PANEL_DOMAIN:?Укажите PANEL_DOMAIN в .env}"
 
+HY2_DOMAIN="${HY2_DOMAIN:-hy2.${ROOT_DOMAIN}}"
+VLESS_DOMAIN="${VLESS_DOMAIN:-vless.${ROOT_DOMAIN}}"
+
 if [[ "$SUI_IMAGE" == PLACEHOLDER* ]]; then
   die "SUI_IMAGE содержит PLACEHOLDER. Подставьте актуальный образ S-UI."
 fi
@@ -104,7 +107,9 @@ if ! docker compose --profile manual run --rm certbot certonly \
   "${CERTBOT_STAGING_ARG[@]}" \
   -d "$ROOT_DOMAIN" \
   -d "$WWW_DOMAIN" \
-  -d "$PANEL_DOMAIN"; then
+    -d "$PANEL_DOMAIN" \
+    -d "$HY2_DOMAIN" \
+    -d "$VLESS_DOMAIN"; then
   die "Выпуск сертификата не удался. Проверьте DNS (Cloudflare DNS only), порты 80/443 и логи certbot."
 fi
 

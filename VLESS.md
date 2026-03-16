@@ -23,6 +23,14 @@
 6. ACME: выключено.
 7. ECH: выключено.
 
+Откуда брать файлы для вставки:
+- fullchain.pem: certbot/conf/live/fish-house.su/fullchain.pem
+- privkey.pem: certbot/conf/live/fish-house.su/privkey.pem
+
+Важно после перевыпуска сертификата:
+- Если выполнялся scripts/init-letsencrypt.sh или certbot renew/certonly, заново вставьте актуальные fullchain.pem и privkey.pem в TLS inbound VLESS.
+- Причина: в режиме "Использовать текст" S-UI хранит PEM в конфиге inbound и не подхватывает изменения файлов автоматически.
+
 Рекомендуемые параметры TLS:
 - Min version: 1.2.
 - Max version: 1.3.
@@ -42,6 +50,7 @@
 1. Убедиться, что inbound в S-UI активен и слушает 28889.
 2. Проверить, что клиент использует именно vless.fish-house.su как SNI.
 3. Проверить подключение клиента на 443/TCP.
+4. Если сертификат недавно перевыпускался, заново вставить fullchain.pem/privkey.pem в TLS inbound.
 
 ## Частые ошибки
 - SNI указан как fish-house.su или panel.fish-house.su: трафик уходит не в VLESS backend.
