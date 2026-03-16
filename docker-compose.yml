@@ -16,7 +16,11 @@ services:
       - ./certbot/www:/var/www/certbot:ro
       - ./certbot/conf:/etc/letsencrypt:ro
     networks:
-      - web
+      web:
+        aliases:
+          - panel.fish-house.su
+          - fish-house.su
+          - www.fish-house.su
     restart: unless-stopped
     read_only: true
     tmpfs:
