@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Falcons | Gallery</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="gallery-page">
+  <main class="container">
+    <nav class="top-nav">
+      <div class="top-nav-left">
+        <button class="menu-btn" data-i18n="menu">Menu</button>
+        <div class="nav-links">
+          <a href="index.html" data-i18n="navHome">Home</a>
+          <a href="about.html" data-i18n="navAbout">About Falcons</a>
+          <a href="gallery.html" class="active" data-i18n="navGallery">Gallery</a>
+        </div>
+      </div>
+      <div class="lang-switcher">
+        <button class="lang-btn" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="ru">RU</button>
+      </div>
+    </nav>
+
+    <section class="hero">
+      <h1 data-i18n="galleryHeroTitle">Falcon Gallery</h1>
+      <p data-i18n="galleryHeroText">
+        Browse photos of falcons and see their strength and confidence.
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2 data-i18n="galleryInfoTitle">What You See in the Gallery</h2>
+      <p data-i18n="galleryInfoText">
+        Each photo highlights a different quality of a falcon: speed, observation,
+        calm behavior, and disciplined movement in flight.
+      </p>
+      <p class="space" data-i18n="lightboxHint">
+        Tip: click any photo to open full-screen view.
+      </p>
+      <p class="space quote" data-i18n="galleryQuote">
+        A falcon does not fight the wind. It reads the wind, then turns it into motion.
+      </p>
+    </section>
+
+    <section class="magazine-feature">
+      <img src="image/4Sokol.jpeg" alt="Falcon in a dramatic sky" class="magazine-image" />
+      <div class="magazine-content">
+        <h2 data-i18n="magazineTitle">Sky Journal Feature</h2>
+        <p data-i18n="magazineText">
+          In this visual story, the falcon appears not just as a hunter, but as an architect of motion.
+          Every curve of the wing is a calculation, every dive is a decision, and every return to height
+          is a quiet statement of control.
+        </p>
+        <p class="space quote" data-i18n="magazineCaption">
+          Field note: Confidence is not noise. Confidence is precision.
+        </p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 data-i18n="didYouKnowTitle">Did You Know?</h2>
+      <p data-i18n="didYouKnowText1">The peregrine falcon is often called the fastest animal on Earth during a steep hunting dive.</p>
+      <p class="space" data-i18n="didYouKnowText2">Falcons use landmarks, sunlight, and magnetic cues to navigate over long distances.</p>
+      <p class="space" data-i18n="didYouKnowText3">A healthy falcon population is a strong indicator that local food chains are working well.</p>
+    </section>
+
+    <section id="cards" class="grid" aria-live="polite"></section>
+
+    <div class="pager-wrap">
+      <button id="prevBtn" aria-label="Go to previous page" data-i18n="prev">Prev</button>
+      <div id="pageButtons" class="pager"></div>
+      <button id="nextBtn" aria-label="Go to next page" data-i18n="next">Next</button>
+    </div>
+    <p id="status" class="status"></p>
+  </main>
+
+  <script src="app.js"></script>
+  <script src="gallery.js"></script>
+
+  <div id="lightbox" class="lightbox" aria-hidden="true">
+    <button id="lightboxClose" class="lightbox-close" aria-label="Close image">x</button>
+    <img id="lightboxImage" src="" alt="" />
+  </div>
+</body>
+</html>
